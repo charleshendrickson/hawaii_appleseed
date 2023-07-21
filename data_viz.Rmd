@@ -1,0 +1,136 @@
+---
+title: "data_visualization"
+author: "Charles Hendrickson"
+date: "2023-07-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+
+```
+
+Total Average Daily Participation - School Year 
+```{r}
+#Total Average Daily Participation - School Year 
+df1 <- data.frame(meal_type = c("breakfast", "lunch"),
+                  participation = c(32543, 100234))
+
+
+# Create the bar chart
+ggplot(df1, aes(x = meal_type, y = participation, fill = meal_type)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  geom_text(aes(label = scales::comma_format()(participation)), vjust = 1.5, color = "black", size = 4) +  # Increase vjust value
+  labs(title = "Total Average Daily Participation By Meal Type",
+       subtitle = "School Year 2018-2019",
+       x = "Meal Type",
+       y = "Participation",
+       fill = "Meal Type") +  # Specify the legend name
+  theme_classic() +
+  theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
+        plot.subtitle = element_text(margin = margin(b = 10)),  # Increase space between subtitle and plot
+        axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
+
+```
+
+
+
+Total Average Daily Participation By Meal Type - School Year 2018-2019
+```{r}
+#Total Average Daily Participation By Meal Type - School Year 2018-2019			
+
+# Load the data
+data <- data.frame(
+  Meal_Type = c("Breakfast", "Lunch"),
+  Free = c(22822, 55127),
+  Reduced = c(2654, 8976),
+  Paid = c(6876, 36131)
+)
+
+# Convert to a tidy data set
+tidy_data <- gather(data, key = "Program_Type", value = "Participation", -Meal_Type)
+
+#Make names lowercase 
+tidy_data <- clean_names(tidy_data)
+
+# Create the bar chart
+# Assuming you have already loaded ggplot2, tidy_data is defined, and scales package is installed and loaded
+
+# Create the bar chart with labels at the top of each stack
+ggplot(tidy_data, aes(x = meal_type, y = participation, fill = program_type)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  geom_text(aes(label = scales::comma_format()(participation)), position = position_stack(vjust = .7), color = "black", size = 4) +  # Position labels at the top
+  labs(title = "Total Average Daily Participation By Program Type",
+       subtitle = "School Year 2018-2019",
+       x = "Meal Type",
+       y = "Participation",
+       fill = "Program Type") +  # Specify the legend name
+  theme_classic() +
+  theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
+        plot.subtitle = element_text(margin = margin(b = 10)),  # Increase space between subtitle and plot
+        axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
+
+
+```
+
+
+
+Total Average Daily Participation By Meal Type - 6.8% increase for lunch and 12.1% increase for breakfast over 2018-19
+```{r}
+# Create the tidy dataframe
+tidy_df <- data.frame(
+  Meal_Type = c("Breakfast", "Lunch"),
+  Free = c(25583, 58876),
+  Reduced = c(2975, 9586),
+  Paid = c(7708, 38588)
+)
+
+# Convert to a tidy format
+tidy_df <- tidyr::pivot_longer(tidy_df, cols = -Meal_Type, names_to = "Program_Type", values_to = "Participation")
+
+#Make columns lower case
+tidy_df <- clean_names(tidy_df)
+
+# Create the bar chart with labels at the top of each stack
+ggplot(tidy_df, aes(x = meal_type, y = participation, fill = program_type)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  geom_text(aes(label = scales::comma_format()(participation)), position = position_stack(vjust = .7), color = "black", size = 4) +  # Position labels at the top
+  labs(title = "Total Average Daily Participation By Program Type",
+       subtitle = "6.8% Increase for Lunch and 12.1% Increase for Breakfast over School Year 2018-19",
+       x = "Meal Type",
+       y = "Participation",
+       fill = "Program Type") +  # Specify the legend name
+  theme_classic() +
+  theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
+        plot.subtitle = element_text(margin = margin(b = 10)),  # Increase space between subtitle and plot
+        axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
+
+```
+
+
+
+```{r}
+# Add a new column to indicate the source for tidy_data
+tidy_data$Source <- "Current"
+
+# Add a new column to indicate the source for tidy_df
+tidy_df$Source <- "With Increase"
+
+# Combine the data frames
+tidy_combined <- rbind(tidy_data, tidy_df)
+
+# Create the bar chart
+ggplot(tidy_combined, aes(x = meal_type, y = participation, fill = Source)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.6, color = "black") +
+  facet_grid(~program_type) +
+  labs(title = "Comparison of Increased School Lunch Participation Rates",
+       subtitle = "6.8% Increase for Lunch and 12.1% Increase for Breakfast over School Year 2018-19",
+       x = "Meal Type",
+       y = "Participation",
+       fill = "Program Type") +
+  theme_minimal()
+```
+
