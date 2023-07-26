@@ -137,10 +137,10 @@ df_difference <- clean_names(df_difference)
 
 ```{r}
 # Add a new column to indicate the source for tidy_data
-df_participation$provision <- "Current"
+df_participation$provision <- "Actual ADP"
 
 # Add a new column to indicate the source for tidy_df
-df_participation_increase$provision <- "With Increase"
+df_participation_increase$provision <- "Increased ADP"
 
 # Combine the data frames
 participation_combined <- rbind(df_participation, df_participation_increase)
@@ -149,7 +149,7 @@ participation_combined <- rbind(df_participation, df_participation_increase)
 participation_combined <- merge(participation_combined, df_difference, by = c("meal_type", "program_type"))
 
 # Set participation_difference to 'NA' for rows where provision is 'Current'
-participation_combined$participation_difference <- ifelse(participation_combined$provision == "Current", NA, participation_combined$participation_difference)
+participation_combined$participation_difference <- ifelse(participation_combined$provision == "Actual ADP", NA, participation_combined$participation_difference)
 
 # Create the bar chart
 ggplot(participation_combined, aes(x = meal_type, y = participation, fill = provision)) +
@@ -169,10 +169,11 @@ ggplot(participation_combined, aes(x = meal_type, y = participation, fill = prov
 ggplot(participation_combined, aes(x = meal_type, y = participation, fill = provision)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.6, color = "black") +
   facet_grid(~program_type) +
-  labs(title = "Comparison of Increased School Lunch Participation Rates",
+  labs(title = "Comparison of Actual and Increased Total Average Daily Participation (ADP)",
        subtitle = "6.8% Increase for Lunch and 12.1% Increase for Breakfast over School Year 2018-19",
        x = "Meal Type",
        y = "Participation",
+       caption = "Values represent the difference between Actual ADP and ADP with 6.8%/12.1% increase.",
        fill = "Program Type") +
   stat_summary(
     aes(label = round(participation_difference, 2)),
@@ -183,10 +184,39 @@ ggplot(participation_combined, aes(x = meal_type, y = participation, fill = prov
     show.legend = FALSE
   ) +
   annotate("text", x = 1.5, y = 65000, label = "", size = 5, color = "blue") +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14))  # Increase the font size of the title to 17
 
 ```
 
+
+October 2022 NSLP Eligibility By Meal Type - School Year 2021-2022
+```{r}
+# Create a data frame with the provided data
+nslp_eligibility_2022_data <- data.frame(
+  Category = c("DOE Public Schools", "Charter Schools - All**", "Charter Schools - Non-CEP", "Private Non-Profit"),
+  `Free Eligible` = c(74107, 4919, 321, 77),
+  `Reduced Price Eligible` = c(9192, 87, 87, 287),
+  `Paid Eligible` = c(76806, 1959, 1429, 372),
+  `% Free and Reduced Enrolled` = c("57.6%", "67%*", NA, "22.2%*")
+)
+
+# Remove percentage signs and other non-numeric characters from the `% Free and Reduced Enrolled` column
+nslp_eligibility_2022_data$`% Free and Reduced Enrolled` <- gsub("[^0-9.]", "", nslp_eligibility_2022_data$`% Free and Reduced Enrolled`, perl = TRUE)
+
+# Convert the column to numeric
+nslp_eligibility_2022_data$`% Free and Reduced Enrolled` <- as.numeric(nslp_eligibility_2022_data$`% Free and Reduced Enrolled`)
+
+# Convert to a tidy data frame
+data_tidy <- gather(data, key = "Eligibility_Type", value = "Enrolled", -Category, na.rm = TRUE)
+
+# Make column names lowercase
+data_tidy <- clean_names(data_tidy)
+
+# Display the resulting tidy data frame
+print(data_tidy)
+
+```
 
 
 
