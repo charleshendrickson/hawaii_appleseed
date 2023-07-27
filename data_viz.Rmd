@@ -10,7 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(janitor)
+library(plotly)
 
+#set the number of digits to display to 10 decimal places
+options(digits = 10)
+#turn off scientific notation
+options(scipen=999)
 ```
 
 Total Average Daily Participation - School Year 
@@ -151,16 +156,6 @@ participation_combined <- merge(participation_combined, df_difference, by = c("m
 # Set participation_difference to 'NA' for rows where provision is 'Current'
 participation_combined$participation_difference <- ifelse(participation_combined$provision == "Actual ADP", NA, participation_combined$participation_difference)
 
-# Create the bar chart
-ggplot(participation_combined, aes(x = meal_type, y = participation, fill = provision)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.6, color = "black") +
-  facet_grid(~program_type) +
-  labs(title = "Comparison of Increased School Lunch Participation Rates",
-       subtitle = "6.8% Increase for Lunch and 12.1% Increase for Breakfast over School Year 2018-19",
-       x = "Meal Type",
-       y = "Participation",
-       fill = "Program Type") +
-  theme_minimal()
 ```
 
 
@@ -173,7 +168,7 @@ ggplot(participation_combined, aes(x = meal_type, y = participation, fill = prov
        subtitle = "6.8% Increase for Lunch and 12.1% Increase for Breakfast over School Year 2018-19",
        x = "Meal Type",
        y = "Participation",
-       caption = "Values represent the difference between Actual ADP and ADP with 6.8%/12.1% increase.",
+       caption = "Values represent the difference between Actual ADP and ADP with 6.8% and 12.1% increase.",
        fill = "Program Type") +
   stat_summary(
     aes(label = round(participation_difference, 2)),
@@ -184,9 +179,9 @@ ggplot(participation_combined, aes(x = meal_type, y = participation, fill = prov
     show.legend = FALSE
   ) +
   annotate("text", x = 1.5, y = 65000, label = "", size = 5, color = "blue") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 14))  # Increase the font size of the title to 17
-
+  theme_classic() +
+  theme(plot.title = element_text(size = 18)) +  # Increase the font size of the title to 17
+  theme(plot.caption = element_text(hjust = 0)) # set the left align here
 ```
 
 
@@ -198,25 +193,171 @@ nslp_eligibility_2022_data <- data.frame(
   `Free Eligible` = c(74107, 4919, 321, 77),
   `Reduced Price Eligible` = c(9192, 87, 87, 287),
   `Paid Eligible` = c(76806, 1959, 1429, 372),
-  `% Free and Reduced Enrolled` = c("57.6%", "67%*", NA, "22.2%*")
+  `% Free and Reduced Enrolled` = c(57.6, 67, NA, 22.2)
 )
 
-# Remove percentage signs and other non-numeric characters from the `% Free and Reduced Enrolled` column
-nslp_eligibility_2022_data$`% Free and Reduced Enrolled` <- gsub("[^0-9.]", "", nslp_eligibility_2022_data$`% Free and Reduced Enrolled`, perl = TRUE)
+# Make column names lowercase and Rename column names
+nslp_eligibility_2022_data <- clean_names(nslp_eligibility_2022_data) %>% rename(percent_free_and_reduced_enrolled = x_free_and_reduced_enrolled, school_type = category)
 
-# Convert the column to numeric
-nslp_eligibility_2022_data$`% Free and Reduced Enrolled` <- as.numeric(nslp_eligibility_2022_data$`% Free and Reduced Enrolled`)
+# Check data types
+summary(nslp_eligibility_2022_data)
 
-# Convert to a tidy data frame
-data_tidy <- gather(data, key = "Eligibility_Type", value = "Enrolled", -Category, na.rm = TRUE)
+# Select columns in the correct order before pivoting
+nslp_eligibility_2022_data <- nslp_eligibility_2022_data %>%
+  select(percent_free_and_reduced_enrolled, school_type, everything())
 
-# Make column names lowercase
-data_tidy <- clean_names(data_tidy)
+# Make the data frame tidy
+nslp_eligibility_2022_data <- pivot_longer(nslp_eligibility_2022_data, 
+                                           cols = starts_with(c("free", "reduced_price", "paid")), 
+                                           names_to = "program_type", 
+                                           values_to = "participation")
 
-# Display the resulting tidy data frame
-print(data_tidy)
+
+# Replace values in the "program_type" column 
+replace_program_type <- function(df) {
+  # Define a function to map the old values to the new ones
+  map_program_type <- function(value) {
+    if (value == "free_eligible") {
+      return("free")
+    } else if (value == "reduced_price_eligible") {
+      return("reduced")
+    } else if (value == "paid_eligible") {
+      return("paid")
+    } else {
+      return(value)
+    }
+  }
+  
+  # Apply the mapping function to the "program_type" column
+  df$program_type <- sapply(df$program_type, map_program_type)
+  
+  return(df)
+}
+
+# Call the function and update the data frame
+nslp_eligibility_2022_data <- replace_program_type(nslp_eligibility_2022_data)
 
 ```
+
+```{r}
+# Create the bar chart
+ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill = school_type)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black") +
+  facet_wrap(~ school_type, scales = "free", ncol = 1) +
+  labs(title = "October 2022 National School Lunch Program Eligibility By Meal Type",
+       subtitle = "School Year 2021-2022",
+       x = "Program Type",
+       y = "Participation",
+       fill = "School Type") +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        strip.text = element_blank())
+
+```
+
+
+```{r}
+ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill = school_type)) +
+  geom_bar(stat = "identity", position = position_dodge(width = .8), width = 0.6) +
+  facet_grid(~school_type) +
+  labs(title = "October 2022 National School Lunch Program Eligibility By Meal Type",
+       subtitle = "School Year 2021-2022",
+       x = "Program Type",
+       y = "Participation",
+       fill = "School Type") +
+  theme(strip.background = element_blank(),
+        strip.text = element_blank()) + 
+  geom_text(
+    aes(label = participation),
+    colour = "black", size = 3,
+    vjust = -0.2,
+    position = position_dodge(width = 0.6),
+    show.legend = FALSE
+  ) +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        strip.text = element_blank()) +
+  theme(plot.title = element_text(size = unit(18, "pt")))  # Increase the font size of the title to 18
+
+
+#For this plot I would like to add ggplotly so I can hover over the bar charts and get the actual value for each bar chart. Then I would like to add one label for each of the four groups that says the % Free and Reduced Enrolled
+
+```
+
+
+
+
+Cost Analysis (Public Schools Only)
+```{r}
+cost_analysis_data_pso <- data.frame(
+  Program_Type = c("Paid", "Reduced","Reduced", "Paid", "NA", "NA", "NA"),
+  Meal_Type = c("Lunch", "Lunch", "Breakfast", "Breakfast", "Breakfast Only", "Lunch Only", "Breakfast + Lunch"),
+  SY21_22_HCNP_Eligibility_Data = c(36359960.40, 661824.00, 496368.00, 15207588.00, 15703956.00, 37021784.40, 52725740.40),
+  FRAC_ADP_SY18_19_Data = c(16113962.24, 639582.05, 138049.54, 926632.28, 1064681.82, 16753544.29, 17818226.11),
+  Increase_6.8_12.1_Data = c(17591027.05, 683954.50, 155959.24, 1243241.21, 1399200.44, 18274981.54, 19674181.99)
+)
+
+# Remove row values that were 'totals' or 'sums' of other rows
+tidy_cost_analysis_data_pso <- data.frame(
+  Program_Type = c("Paid", "Reduced","Reduced", "Paid"),
+  Meal_Type = c("Lunch", "Lunch", "Breakfast", "Breakfast"),
+  SY21_22_HCNP = c(36359960.40, 661824.00, 496368.00, 15207588.00),
+  FRAC_ADP_SY18_19 = c(16113962.24, 639582.05, 138049.54, 926632.28),
+  Increase_6.8_12.1 = c(17591027.05, 683954.50, 155959.24, 1243241.21)
+)
+
+# Make column names lowercase
+tidy_cost_analysis_data_pso <- clean_names(tidy_cost_analysis_data_pso)
+
+# Make the data frame Tidy
+tidy_cost_analysis_data_pso <- pivot_longer(tidy_cost_analysis_data_pso, 
+                                           cols = starts_with(c("sy21_", "frac_", "increase")), 
+                                           names_to = "budget_type", 
+                                           values_to = "cost")
+
+```
+
+
+```{r}
+ggplot(data = tidy_cost_analysis_data_pso, aes(x = program_type, y = cost, fill = budget_type)) +
+  geom_bar(stat = "identity", position = "stack")+
+  facet_grid(~meal_type) +
+  labs(title = "Cost Analysis of School Meal Programs",
+       subtitle = "Public Schools Only",
+       x = "Program Type",
+       y = "Cost",
+       fill = "Meal Type") 
+  # geom_text(
+  #   aes(label = cost),
+  #   colour = "black", size = 3,
+  #   vjust = -0.2,
+  #   position = position_dodge(width = 0.6),
+  #   show.legend = FALSE
+  # ) +
+  # theme_classic()  +
+  # theme(strip.background = element_blank(),
+  #       strip.text = element_blank())
+
+
+```
+
+
+```{r}
+tidy_cost_analysis_data_pso_grouped <- tidy_cost_analysis_data_pso %>% 
+  group_by(budget_type) %>% 
+  summarise(cost_per_budget_type = sum(cost))
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
