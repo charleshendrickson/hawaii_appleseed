@@ -1,7 +1,7 @@
 ---
-title: "data_visualization"
+title: "Hawaii Appleseed data visualization"
 author: "Charles Hendrickson"
-date: "2023-07-21"
+date: "2023-08-13"
 output: html_document
 ---
 
@@ -18,7 +18,7 @@ options(digits = 10)
 options(scipen=999)
 ```
 
-Total Average Daily Participation - School Year 
+
 ```{r}
 #Total Average Daily Participation - School Year 
 df_total <- data.frame(meal_type = c("breakfast", "lunch"),
@@ -38,12 +38,9 @@ ggplot(df_total, aes(x = meal_type, y = participation, fill = meal_type)) +
   theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
         plot.subtitle = element_text(margin = margin(b = 10)),  # Increase space between subtitle and plot
         axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
-
 ```
 
 
-
-Total Average Daily Participation By Meal Type - School Year 2018-2019
 ```{r}
 #Total Average Daily Participation By Meal Type - School Year 2018-2019			
 
@@ -80,8 +77,8 @@ ggplot(df_participation, aes(x = meal_type, y = participation, fill = program_ty
 
 
 
-Total Average Daily Participation By Program Type - 6.8% increase for lunch and 12.1% increase for breakfast over 2018-19
-```{r}
+```{r, warning=FALSE}
+#Total Average Daily Participation By Program Type - 6.8% increase for lunch and 12.1% increase for breakfast over 2018-19
 # Create the tidy dataframe
 df_participation_increase <- data.frame(
   Meal_Type = c("Breakfast", "Lunch"),
@@ -100,7 +97,7 @@ df_participation_increase <- clean_names(df_participation_increase)
 ggplot(df_participation_increase, aes(x = meal_type, y = participation, fill = program_type)) +
   geom_bar(stat = "identity", width = 0.6) +
   geom_text(aes(label = scales::comma_format()(participation)), position = position_stack(vjust = .7), color = "black", size = 4) +  # Position labels at the top
-  labs(title = "Total Average Daily Participation By Programm Type",
+  labs(title = "Total Average Daily Participation By Program Type",
        subtitle = "6.8% Increase for Lunch and 12.1% Increase for Breakfast over 2018-19 School Year",
        x = "Meal Type",
        y = "Participation",
@@ -111,8 +108,9 @@ ggplot(df_participation_increase, aes(x = meal_type, y = participation, fill = p
         axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
 ```
 
-DIFFERENCE Between Actual ADP and 6.8%/12.1% Increase (# of Students)			
+
 ```{r}
+#DIFFERENCE Between Actual ADP and 6.8%/12.1% Increase (# of Students)
 # Given data in a matrix
 data_matrix <- matrix(
   c(2761, 321, 832, 3749, 610, 2457),
@@ -185,8 +183,8 @@ ggplot(participation_combined, aes(x = meal_type, y = participation, fill = prov
 ```
 
 
-October 2022 NSLP Eligibility By Meal Type - School Year 2021-2022
 ```{r}
+#October 2022 NSLP Eligibility By Meal Type - School Year 2021-2022
 # Create a data frame with the provided data
 nslp_eligibility_2022_data <- data.frame(
   Category = c("DOE Public Schools", "Charter Schools - All**", "Charter Schools - Non-CEP", "Private Non-Profit"),
@@ -198,9 +196,6 @@ nslp_eligibility_2022_data <- data.frame(
 
 # Make column names lowercase and Rename column names
 nslp_eligibility_2022_data <- clean_names(nslp_eligibility_2022_data) %>% rename(percent_free_and_reduced_enrolled = x_free_and_reduced_enrolled, school_type = category)
-
-# Check data types
-summary(nslp_eligibility_2022_data)
 
 # Select columns in the correct order before pivoting
 nslp_eligibility_2022_data <- nslp_eligibility_2022_data %>%
@@ -238,6 +233,7 @@ replace_program_type <- function(df) {
 nslp_eligibility_2022_data <- replace_program_type(nslp_eligibility_2022_data)
 
 ```
+
 
 ```{r}
 # Create the bar chart
@@ -283,8 +279,10 @@ ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill
 
 
 
-Cost Analysis (Public Schools Only)
 ```{r}
+#Cost Analysis (Public Schools Only)
+
+#Create a data frame
 cost_analysis_data_pso <- data.frame(
   Program_Type = c("Paid", "Reduced","Reduced", "Paid", "NA", "NA", "NA"),
   Meal_Type = c("Lunch", "Lunch", "Breakfast", "Breakfast", "Breakfast Only", "Lunch Only", "Breakfast + Lunch"),
@@ -353,7 +351,13 @@ ggplot(data = cost_analysis_data_pso_filtered, aes(x = reorder(cost_type, + cost
   labs(title = "Cost Analysis of School Meal Programs",
        subtitle = "Public Schools Only",
        x = "Outcomes",
-       y = "Cost")
+       y = "Cost",
+       caption = "The lowest cost assumes meal fees are the same and 0% paid and reduced-price student participation
+from charter schools. The expected cost assumes a 6.8% increase for lunch costs and a 12.1% increase 
+for breakfast costs and 0% paid and reduced-price student participation from charter schools. The highest 
+cost assumes 100% participation for DOE and charter schools and meal fees are the same.") +
+  theme_classic() +
+  theme(plot.caption = element_text(hjust = 0)) # set the left align here
 
 
 ```
