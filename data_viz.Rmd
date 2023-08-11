@@ -18,6 +18,7 @@ options(digits = 10)
 options(scipen=999)
 ```
 
+<div style="height: 50px;"></div>
 
 ```{r}
 #Total Average Daily Participation - School Year 
@@ -40,6 +41,7 @@ ggplot(df_total, aes(x = meal_type, y = participation, fill = meal_type)) +
         axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
 ```
 
+<div style="height: 100px;"></div>
 
 ```{r}
 #Total Average Daily Participation By Meal Type - School Year 2018-2019			
@@ -75,7 +77,7 @@ ggplot(df_participation, aes(x = meal_type, y = participation, fill = program_ty
 
 ```
 
-
+<div style="height: 100px;"></div>
 
 ```{r, warning=FALSE}
 #Total Average Daily Participation By Program Type - 6.8% increase for lunch and 12.1% increase for breakfast over 2018-19
@@ -156,8 +158,9 @@ participation_combined$participation_difference <- ifelse(participation_combined
 
 ```
 
+<div style="height: 100px;"></div>
 
-```{r}
+```{r, warning=FALSE}
 # Create the bar chart with single label for participation_difference
 ggplot(participation_combined, aes(x = meal_type, y = participation, fill = provision)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.6, color = "black") +
@@ -234,6 +237,7 @@ nslp_eligibility_2022_data <- replace_program_type(nslp_eligibility_2022_data)
 
 ```
 
+<div style="height: 100px;"></div>
 
 ```{r}
 # Create the bar chart
@@ -251,6 +255,7 @@ ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill
 
 ```
 
+<div style="height: 100px;"></div>
 
 ```{r}
 ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill = school_type)) +
@@ -275,8 +280,6 @@ ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill
         strip.text = element_blank()) +
   theme(plot.title = element_text(size = unit(16, "pt")))  # Increase the font size of the title to 18
 ```
-
-
 
 
 ```{r}
@@ -339,6 +342,7 @@ cost_analysis_data_pso <- create_cost_type(cost_analysis_data_pso)
 
 ```
 
+<div style="height: 100px;"></div>
 
 ```{r}
 # Filter for lunch only, breakfast only, and breakfast+lunch
@@ -362,6 +366,7 @@ cost assumes 100% participation for DOE and charter schools and meal fees are th
 
 ```
 
+<div style="height: 100px;"></div>
 
 ```{r}
 #Stacked bar chart with breakfast+lunch, luch only, and breakfast only. 3X Most it could cost, least it could cost, and expected cost.
@@ -370,11 +375,13 @@ ggplot(data = cost_analysis_data_pso_filtered, aes(x = reorder(cost_type, + cost
   labs(title = "Cost Analysis of School Meal Programs",
        subtitle = "Public Schools Only",
        x = "Outcomes",
-       y = "Cost")
+       y = "Cost") +
+  theme_classic()
 
 
 ```
 
+<div style="height: 100px;"></div>
 
 
 
