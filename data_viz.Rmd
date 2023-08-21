@@ -36,6 +36,7 @@ ggplot(df_total, aes(x = meal_type, y = participation, fill = meal_type)) +
        y = "Participation",
        fill = "Meal Type") +  # Specify the legend name
   theme_classic() +
+  scale_y_continuous(labels = scales::comma) +
   theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
         plot.subtitle = element_text(margin = margin(b = 10)),  # Increase space between subtitle and plot
         axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
@@ -70,6 +71,7 @@ ggplot(df_participation, aes(x = meal_type, y = participation, fill = program_ty
        y = "Participation",
        fill = "Program Type") +  # Specify the legend name
   theme_classic() +
+  scale_y_continuous(labels = scales::comma) +
   theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
         plot.subtitle = element_text(margin = margin(b = 10)),  # Increase space between subtitle and plot
         axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
@@ -104,7 +106,8 @@ ggplot(df_participation_increase, aes(x = meal_type, y = participation, fill = p
        x = "Meal Type",
        y = "Participation",
        fill = "Program Type") +  # Specify the legend name
-  theme_classic() + 
+  theme_classic() +
+  scale_y_continuous(labels = scales::comma) +
   theme(plot.title = element_text(margin = margin(b = 5)),  # Increase space between title and subtitle
         plot.subtitle = element_text(margin = margin(b = 20)),  # Increase space between subtitle and plot
         axis.text.y = element_text(size = 10))  # Adjust the y-axis label size
@@ -161,7 +164,10 @@ participation_combined$participation_difference <- ifelse(participation_combined
 <div style="height: 100px;"></div>
 
 ```{r, warning=FALSE}
-# Create the bar chart with single label for participation_difference
+# Load the necessary library
+library(ggplot2)
+
+# Create the bar chart
 ggplot(participation_combined, aes(x = meal_type, y = participation, fill = provision)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.6, color = "black") +
   facet_grid(~program_type) +
@@ -172,19 +178,20 @@ ggplot(participation_combined, aes(x = meal_type, y = participation, fill = prov
        caption = "*Values represent the difference between actual ADP and ADP with 6.8% and 12.1% increase.",
        fill = "Program Type") +
   stat_summary(
-    aes(label = round(participation_difference, 2)),
+    aes(label = scales::comma(round(participation_difference, 2))),
     fun = mean,
     geom = "text",
     vjust = -0.5,
     position = position_dodge(width = 0.6),
     show.legend = FALSE
   ) +
+  scale_y_continuous(labels = scales::comma) +
   annotate("text", x = 1.5, y = 65000, label = "", size = 5, color = "blue") +
   theme_classic() +
-  theme(plot.title = element_text(size = 18)) +  # Increase the font size of the title to 17
-  theme(plot.caption = element_text(hjust = 0)) # set the left align here
-```
+  theme(plot.title = element_text(size = 18)) +
+  theme(plot.caption = element_text(hjust = 0))
 
+```
 
 ```{r}
 #October 2022 NSLP Eligibility By Meal Type - School Year 2021-2022
@@ -250,6 +257,7 @@ ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill
        y = "Eligibility",
        fill = "School Type") +
   theme_classic() +
+  scale_y_continuous(labels = scales::comma) +
   theme(strip.background = element_blank(),
         strip.text = element_blank())
 
@@ -257,7 +265,12 @@ ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill
 
 <div style="height: 100px;"></div>
 
+
 ```{r}
+# Load the necessary library
+library(ggplot2)
+
+# Create the bar chart
 ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill = school_type)) +
   geom_bar(stat = "identity", position = position_dodge(width = .8), width = 0.6) +
   facet_grid(~school_type) +
@@ -269,16 +282,18 @@ ggplot(nslp_eligibility_2022_data, aes(x = program_type, y = participation, fill
   theme(strip.background = element_blank(),
         strip.text = element_blank()) + 
   geom_text(
-    aes(label = participation),
+    aes(label = scales::comma(participation)),
     colour = "black", size = 3,
     vjust = -0.2,
     position = position_dodge(width = 0.6),
     show.legend = FALSE
   ) +
+  scale_y_continuous(labels = scales::comma) +
   theme_classic() +
   theme(strip.background = element_blank(),
         strip.text = element_blank()) +
   theme(plot.title = element_text(size = unit(16, "pt")))  # Increase the font size of the title to 18
+
 ```
 
 
@@ -369,19 +384,29 @@ cost assumes 100% participation for DOE and charter schools and meal fees are th
 <div style="height: 100px;"></div>
 
 ```{r}
-#Stacked bar chart with breakfast+lunch, luch only, and breakfast only. 3X Most it could cost, least it could cost, and expected cost.
+# Load the necessary library
+library(ggplot2)
+
+# Create the stacked bar chart
 ggplot(data = cost_analysis_data_pso_filtered, aes(x = reorder(cost_type, + cost), y = cost, fill = meal_type)) +
   geom_bar(stat = "identity", position = position_dodge(width = .8), width = 0.6) +
   labs(title = "Cost Analysis of School Meal Programs",
        subtitle = "Public Schools Only",
        x = "Outcomes",
        y = "Cost") +
-  theme_classic()
-
+  geom_text(
+    aes(label = scales::comma(cost)),
+    colour = "black", size = 3,
+    vjust = -0.2,
+    position = position_dodge(width = 0.6),
+    show.legend = FALSE) +
+  theme_classic() +
+  scale_y_continuous(labels = scales::comma)
 
 ```
 
 <div style="height: 100px;"></div>
+
 
 
 
